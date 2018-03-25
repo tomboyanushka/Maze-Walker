@@ -9,7 +9,7 @@
 #include "Runtime/Engine/Classes/Materials/MaterialInstanceDynamic.h"
 #include "ConstructorHelpers.h"
 #include "Runtime/Engine/Classes/Components/SphereComponent.h"
-#include "Components/BoxComponent.h"
+#include "Components/SphereComponent.h"
 
 #define print(text) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 1.5, FColor::Green,text)
 
@@ -28,32 +28,19 @@ AProjectileActor::AProjectileActor()
 	BulletComponent->SetNotifyRigidBodyCollision(true);
 	BulletComponent->SetMassOverrideInKg(NAME_None, 10.f);
 	BulletComponent->SetEnableGravity(true);
-	BulletComponent->BodyInstance.SetCollisionProfileName("BlockAllDynamic");
+	//BulletComponent->BodyInstance.SetCollisionProfileName("BlockAllDynamic");
 	BulletComponent->SetMobility(EComponentMobility::Movable);
 	auto material = LoadObject<UMaterial>(nullptr, TEXT("/Game/StarterContent/Materials/M_Tech_Hex_Tile_Pulse"));
 	BulletComponent->SetMaterial(0, material);
 	BulletComponent->SetWorldScale3D(FVector(0.1,0.1,0.1));
-	BoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComp"));
-	BoxComponent->SetSimulatePhysics(true);
-	BoxComponent->SetNotifyRigidBodyCollision(true);
-	BoxComponent->SetCollisionEnabled(ECollisionEnabled::PhysicsOnly);
-
+	
 	FScriptDelegate Delegate;
 	Delegate.BindUFunction(this, "OnPHit");
 	OnActorHit.Add(Delegate);
-
-	//BulletComponent->AttachToComponent(BoxComponent, FAttachmentTransformRules::KeepRelativeTransform);
-	BoxComponent->BodyInstance.SetCollisionProfileName("BlockAllDynamic");
-	BoxComponent->OnComponentHit.AddDynamic(this, &AProjectileActor::OnHit);
 	BulletComponent->OnComponentHit.AddDynamic(this, &AProjectileActor::OnHit);
 
 	SetRootComponent(BulletComponent);
-	//SetRootComponent(BulletComponent);
-	//AddInstanceComponent(BoxComponent);	
-	AddInstanceComponent(BoxComponent);
 }
-
-
 
 // Called when the game starts or when spawned
 void AProjectileActor::BeginPlay()
@@ -65,8 +52,7 @@ void AProjectileActor::BeginPlay()
 void AProjectileActor::Tick(float DeltaTime)
 {
 	BulletComponent->AddImpulse(ShootDir * 3000);
-	Super::Tick(DeltaTime);
-	
+	Super::Tick(DeltaTime);	
 }
 
 void AProjectileActor::OnPHit()
@@ -85,7 +71,7 @@ void AProjectileActor::Initialize(FVector startLocation)
 	startLocation.Z -= 17;
 	//startLocation.X += 1;
 	SetActorLocation(startLocation);
-	print("HIT ME!");
+	print("Init Projectile!");
 }
 
 void AProjectileActor::OnHit(UPrimitiveComponent * HitComp, AActor * OtherActor, UPrimitiveComponent * OtherComp, FVector NormalImpulse, const FHitResult & Hit)

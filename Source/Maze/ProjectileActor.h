@@ -24,9 +24,6 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	UStaticMeshComponent* BulletComponent;
 
-	UPROPERTY(VisibleAnywhere)
-	class UBoxComponent* BoxComponent;
-
 	FVector ShootDir;
 	FVector StartLocation;
 
