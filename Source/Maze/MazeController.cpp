@@ -3,9 +3,17 @@
 #include "MazeController.h"
 #include "Components/StaticMeshComponent.h"
 #include "ConstructorHelpers.h"
-
+#include "Engine/StaticMeshActor.h"
+#include "Engine/StaticMesh.h"
 #include "MazeActor.h"
 #include "Engine/World.h"
+#include "FP_FirstPerson/FP_FirstPersonHUD.h"
+#include "DrawDebugHelpers.h"
+#include "Runtime/Engine/Classes/Materials/MaterialInstanceDynamic.h"
+#include "ConstructorHelpers.h"
+#include "Runtime/Engine/Public/EngineUtils.h"
+#include "Runtime/Engine/Classes/Camera/CameraActor.h"
+
 // Sets default values
 AMazeController::AMazeController()
 {
@@ -18,10 +26,6 @@ AMazeController::AMazeController()
 // Called when the game starts or when spawned
 void AMazeController::BeginPlay()
 {
-	
-	Super::BeginPlay();
-	auto mazeItem = GetWorld()->SpawnActor<AMazeActor>();
-	mazeItem->SetActorLocation(FVector(400, 0, 100));
 	
 }
 

@@ -1,6 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "ProjectileActor.h"
+#include "ProjectileActorEnemy.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMeshActor.h"
 #include "Engine/StaticMesh.h"
@@ -12,55 +12,54 @@
 #include "Components/SphereComponent.h"
 
 #define print(text) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 1.5, FColor::Green,text)
-
 // Sets default values
-AProjectileActor::AProjectileActor()
+AProjectileActorEnemy::AProjectileActorEnemy()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	BulletComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	BulletComponent->SetMobility(EComponentMobility::Movable);
-	UStaticMesh* Mesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Game/StarterContent/Shapes/Shape_Sphere.Shape_Sphere"));
+	UStaticMesh* EnemyMesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Game/StarterContent/Shapes/Shape_Sphere.Shape_Sphere"));
 
 	BulletComponent->SetVisibility(true);
-	BulletComponent->SetStaticMesh(Mesh);
+	BulletComponent->SetStaticMesh(EnemyMesh);
 	BulletComponent->SetSimulatePhysics(true);
 	BulletComponent->SetNotifyRigidBodyCollision(true);
 	BulletComponent->SetMassOverrideInKg(NAME_None, 10.f);
 	BulletComponent->SetEnableGravity(true);
 	//BulletComponent->BodyInstance.SetCollisionProfileName("BlockAllDynamic");
 	BulletComponent->SetMobility(EComponentMobility::Movable);
-	auto material = LoadObject<UMaterial>(nullptr, TEXT("/Game/StarterContent/Materials/M_Tech_Hex_Tile_Pulse"));
-	BulletComponent->SetMaterial(0, material);
+	auto EnemyMaterial = LoadObject<UMaterial>(nullptr, TEXT("/Game/StarterContent/Materials/M_Tech_Hex_Tile_Pulse"));
+	BulletComponent->SetMaterial(0, EnemyMaterial);
 	BulletComponent->SetWorldScale3D(FVector(0.2, 0.2, 0.2));
-	
+
 	FScriptDelegate Delegate;
 	Delegate.BindUFunction(this, "OnPHit");
 	OnActorHit.Add(Delegate);
-	BulletComponent->OnComponentHit.AddDynamic(this, &AProjectileActor::OnHit);
+	BulletComponent->OnComponentHit.AddDynamic(this, &AProjectileActorEnemy::OnHit);
 
 	SetRootComponent(BulletComponent);
 }
 
 // Called when the game starts or when spawned
-void AProjectileActor::BeginPlay()
+void AProjectileActorEnemy::BeginPlay()
 {
 	Super::BeginPlay();
 }
 
 // Called every frame
-void AProjectileActor::Tick(float DeltaTime)
+void AProjectileActorEnemy::Tick(float DeltaTime)
 {
 	BulletComponent->AddImpulse(ShootDir * 3000);
-	Super::Tick(DeltaTime);	
+	Super::Tick(DeltaTime);
 }
 
-void AProjectileActor::OnPHit()
-{
-	print("HIT ME!");
-}
+//void AProjectileActorEnemy::OnPAEHit()
+//{
+//	print("HIT ME!");
+//}
 
-void AProjectileActor::Initialize(FVector startLocation)
+void AProjectileActorEnemy::Initialize(FVector startLocation)
 {
 	StartLocation = startLocation;
 	auto myLoc = GetActorLocation();
@@ -74,8 +73,10 @@ void AProjectileActor::Initialize(FVector startLocation)
 	//print("Init Projectile!");
 }
 
-void AProjectileActor::OnHit(UPrimitiveComponent * HitComp, AActor * OtherActor, UPrimitiveComponent * OtherComp, FVector NormalImpulse, const FHitResult & Hit)
-{
-	print("HIT ME!");
-}
+//void AProjectileActorEnemy::OnHit(UPrimitiveComponent * HitComp, AActor * OtherActor, UPrimitiveComponent * OtherComp, FVector NormalImpulse, const FHitResult & Hit)
+//{
+//	print("HIT ME!");
+//}
+
+
 

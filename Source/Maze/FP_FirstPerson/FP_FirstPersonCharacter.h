@@ -29,6 +29,9 @@ class AFP_FirstPersonCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FirstPersonCameraComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UCameraComponent* TopDownCameraComponent;
+
 public:
 	AFP_FirstPersonCharacter();
 
@@ -61,6 +64,7 @@ public:
 	float WeaponDamage;
 
 protected:
+	void Tick(float deltaTime) override;
 
 	/** Handler for a touch input beginning. */
 	void TouchStarted(const ETouchIndex::Type FingerIndex, const FVector Location);

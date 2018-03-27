@@ -49,33 +49,7 @@ void AMazeActor::BeginPlay()
 void AMazeActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	auto hud = Cast<AFP_FirstPersonHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
-	auto controller = GetWorld()->GetFirstPlayerController();
-	if (GetWorld()->GetFirstPlayerController()->IsInputKeyDown(EKeys::Tab))
-	{
 
-		ACameraActor *camera = nullptr;
-		for (TActorIterator<ACameraActor> ActorItr(GetWorld()); ActorItr; ++ActorItr)
-		{
-
-			// Same as with the Object Iterator, access the subclass instance with the * or -> operators.
-
-			camera = *ActorItr;
-			if (camera->GetFName().ToString() == FString("CameraActorX"))
-			{
-				break;
-			}
-		}
-		hud->showTopDownView = true;
-		hud->playerLocation = controller->GetPawn()->GetActorLocation();
-		controller->SetViewTarget(camera);
-		//
-	}
-	else
-	{
-		hud->showTopDownView = false;
-		//controller->SetViewTarget(nullptr);
-	}
 
 }
 

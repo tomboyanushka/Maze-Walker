@@ -9,6 +9,17 @@
 #include "GameFramework/PlayerController.h"
 #include "../ProjectileActor.h"
 #include "Components/StaticMeshComponent.h"
+#include "Engine/StaticMeshActor.h"
+#include "Engine/StaticMesh.h"
+#include "Engine/World.h"
+#include "FP_FirstPerson/FP_FirstPersonHUD.h"
+#include "DrawDebugHelpers.h"
+#include "Runtime/Engine/Classes/Materials/MaterialInstanceDynamic.h"
+#include "ConstructorHelpers.h"
+#include "Runtime/Engine/Public/EngineUtils.h"
+#include "Runtime/Engine/Classes/Camera/CameraActor.h"
+#include "ProjectileActorEnemy.h"
+
 
 
 #define print(text) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 1.5, FColor::Green,text)
@@ -22,6 +33,8 @@ DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
 
 AFP_FirstPersonCharacter::AFP_FirstPersonCharacter()
 {
+
+
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
@@ -34,6 +47,12 @@ AFP_FirstPersonCharacter::AFP_FirstPersonCharacter()
 	FirstPersonCameraComponent->SetupAttachment(GetCapsuleComponent());
 	FirstPersonCameraComponent->RelativeLocation = FVector(0, 0, 64.f); // Position the camera
 	FirstPersonCameraComponent->bUsePawnControlRotation = true;
+
+	TopDownCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("TopDownCamera"));
+	TopDownCameraComponent->SetupAttachment(GetCapsuleComponent());
+	TopDownCameraComponent->SetWorldLocation(FVector(0, 0, 964.f)); // Position the camera
+	TopDownCameraComponent->RelativeRotation = FRotator::FRotator(0, 90, 0);// FQuat::FQuat(90, 0, 0, 0);
+	//TopDownCameraComponent->bUsePawnControlRotation = true;
 	
 	// Create a mesh component that will be used when being viewed from a '1st person' view (when controlling this pawn)
 	Mesh1P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh1P"));
@@ -91,6 +110,46 @@ void AFP_FirstPersonCharacter::SetupPlayerInputComponent(class UInputComponent* 
 	PlayerInputComponent->BindAxis("TurnRate", this, &AFP_FirstPersonCharacter::TurnAtRate);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &AFP_FirstPersonCharacter::LookUpAtRate);
+}
+
+void AFP_FirstPersonCharacter::Tick(float deltaTime)
+{
+	Super::Tick(deltaTime);
+	auto hud = Cast<AFP_FirstPersonHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
+	auto controller = GetWorld()->GetFirstPlayerController();
+	if (GetWorld()->GetFirstPlayerController()->IsInputKeyDown(EKeys::Tab))
+	{
+
+		//ACameraActor *camera = nullptr;
+		//for (TActorIterator<ACameraActor> ActorItr(GetWorld()); ActorItr; ++ActorItr)
+		//{
+
+		//	// Same as with the Object Iterator, access the subclass instance with the * or -> operators.
+
+		//	camera = *ActorItr;
+		//	if (camera->GetFName().ToString() == FString("CameraActorX"))
+		//	{
+		//		break;
+		//	}
+		//}
+		//auto component = (UCameraComponent*)camera->GetRootComponent();
+		FirstPersonCameraComponent->Deactivate();
+		auto quat = FQuat::FQuat(90, 90, 0,0);
+		TopDownCameraComponent->SetWorldLocationAndRotation(FVector(2840.0, 6360.0, 7420.f), quat);
+		Mesh1P->SetupAttachment(TopDownCameraComponent); 
+		hud->showTopDownView = true;
+		hud->playerLocation = controller->GetPawn()->GetActorLocation();
+		//controller->SetViewTarget(camera);
+
+	}
+	else
+	{
+		hud->showTopDownView = false;
+		//controller->SetViewTarget(nullptr);
+		FirstPersonCameraComponent->Activate();
+		Mesh1P->SetupAttachment(FirstPersonCameraComponent);
+		
+	}
 }
 
 void AFP_FirstPersonCharacter::OnFire()
