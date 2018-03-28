@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "FP_FirstPersonCharacter.generated.h"
 
+class UBoxComponent;
 class UInputComponent;
 class UCameraComponent;
 class USkeletalMeshComponent;
@@ -16,6 +17,9 @@ UCLASS(config=Game)
 class AFP_FirstPersonCharacter : public ACharacter
 {
 	GENERATED_BODY()
+
+	UPROPERTY(VisibleDefaultsOnly, Category = Capsule)
+	UCapsuleComponent* FPSComponent;
 
 	/** Pawn mesh: 1st person view (arms; seen only by self) */
 	UPROPERTY(VisibleDefaultsOnly, Category=Mesh)
@@ -152,10 +156,14 @@ protected:
 	void TryEnableTouchscreenMovement(UInputComponent* InputComponent);
 
 public:
+	
+	//returns capsule subobject
+	FORCEINLINE class UCapsuleComponent* GetFPSComponent() const { return FPSComponent; }
 	/** Returns Mesh1P subobject **/
 	FORCEINLINE class USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
 	/** Returns FirstPersonCameraComponent subobject **/
 	FORCEINLINE class UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
+	void OnHit(class UPrimitiveComponent* HitComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 };
 

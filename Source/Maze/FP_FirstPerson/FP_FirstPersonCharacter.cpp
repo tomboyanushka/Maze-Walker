@@ -12,6 +12,7 @@
 #include "Engine/StaticMeshActor.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/World.h"
+#include "Engine.h"
 #include "FP_FirstPerson/FP_FirstPersonHUD.h"
 #include "DrawDebugHelpers.h"
 #include "Runtime/Engine/Classes/Materials/MaterialInstanceDynamic.h"
@@ -19,6 +20,7 @@
 #include "Runtime/Engine/Public/EngineUtils.h"
 #include "Runtime/Engine/Classes/Camera/CameraActor.h"
 #include "ProjectileActorEnemy.h"
+#include "Runtime/Engine/Classes/Components/BoxComponent.h"
 
 
 
@@ -31,16 +33,28 @@ DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
 //////////////////////////////////////////////////////////////////////////
 // AFP_FirstPersonCharacter
 
+int Health = 100;
+//FString EString = FString(TEXT("AProjectileActorEnemy"));
+
 AFP_FirstPersonCharacter::AFP_FirstPersonCharacter()
 {
 
 
+	
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
 	// Set our turn rates for input
 	BaseTurnRate = 45.f;
 	BaseLookUpRate = 45.f;
+
+	FPSComponent = CreateDefaultSubobject<UCapsuleComponent>(TEXT("BulletCollider"));
+	FPSComponent->bGenerateOverlapEvents = true;
+	FPSComponent->SetWorldScale3D(FVector(2.0f, 2.0f, 2.0f));
+	//FPSComponent->IsSimulatingPhysics = true;
+	FPSComponent->SetMobility(EComponentMobility::Movable);
+	FPSComponent->OnComponentHit.AddDynamic(this, &AFP_FirstPersonCharacter::OnHit);
+	
 
 	// Create a CameraComponent	
 	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
@@ -75,12 +89,16 @@ AFP_FirstPersonCharacter::AFP_FirstPersonCharacter()
 	// Default offset from the character location for projectiles to spawn
 	GunOffset = FVector(100.0f, 30.0f, 10.0f);
 
+	
+
 	// Note: The ProjectileClass and the skeletal mesh/anim blueprints for Mesh1P are set in the
 	// derived blueprint asset named MyCharacter (to avoid direct content references in C++)
 }
 
 //////////////////////////////////////////////////////////////////////////
 // Input
+
+
 
 void AFP_FirstPersonCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
@@ -333,3 +351,15 @@ void AFP_FirstPersonCharacter::TryEnableTouchscreenMovement(UInputComponent* Pla
 	PlayerInputComponent->BindTouch(EInputEvent::IE_Released, this, &AFP_FirstPersonCharacter::EndTouch);
 	PlayerInputComponent->BindTouch(EInputEvent::IE_Repeat, this, &AFP_FirstPersonCharacter::TouchUpdate);	
 }
+
+void AFP_FirstPersonCharacter::OnHit(UPrimitiveComponent * HitComp, AActor * OtherActor, UPrimitiveComponent * OtherComp, FVector NormalImpulse, const FHitResult & Hit)
+{
+	print("I got hit");
+	//if (OtherActor->IsA(AProjectileActor::StaticClass()))
+	//{
+	//	print("I got hit");
+	//	//Health -= 10;
+	//}
+}
+
+

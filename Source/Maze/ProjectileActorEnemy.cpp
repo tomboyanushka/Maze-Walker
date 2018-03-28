@@ -73,10 +73,10 @@ void AProjectileActorEnemy::Initialize(FVector startLocation)
 	//print("Init Projectile!");
 }
 
-//void AProjectileActorEnemy::OnHit(UPrimitiveComponent * HitComp, AActor * OtherActor, UPrimitiveComponent * OtherComp, FVector NormalImpulse, const FHitResult & Hit)
-//{
-//	print("HIT ME!");
-//}
+void AProjectileActorEnemy::OnHit(UPrimitiveComponent * HitComp, AActor * OtherActor, UPrimitiveComponent * OtherComp, FVector NormalImpulse, const FHitResult & Hit)
+{
+	print("HIT ME!");
+}
 
 
 
