@@ -16,8 +16,9 @@
 // Sets default values
 AProjectileActor::AProjectileActor()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+
 	BulletComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	BulletComponent->SetMobility(EComponentMobility::Movable);
 	UStaticMesh* Mesh = LoadObject<UStaticMesh>(nullptr, TEXT("/Game/StarterContent/Shapes/Shape_Sphere.Shape_Sphere"));
@@ -34,10 +35,10 @@ AProjectileActor::AProjectileActor()
 	BulletComponent->SetMaterial(0, material);
 	BulletComponent->SetWorldScale3D(FVector(0.2, 0.2, 0.2));
 	
-	FScriptDelegate Delegate;
-	Delegate.BindUFunction(this, "OnPHit");
-	OnActorHit.Add(Delegate);
-	BulletComponent->OnComponentHit.AddDynamic(this, &AProjectileActor::OnHit);
+	//FScriptDelegate Delegate;
+	//Delegate.BindUFunction(this, "OnPHit");
+	//OnActorHit.Add(Delegate);
+	BulletComponent->OnComponentHit.AddDynamic(this, &AProjectileActor::OnActorHit);
 
 	SetRootComponent(BulletComponent);
 }
@@ -74,8 +75,10 @@ void AProjectileActor::Initialize(FVector startLocation)
 	//print("Init Projectile!");
 }
 
-void AProjectileActor::OnHit(UPrimitiveComponent * HitComp, AActor * OtherActor, UPrimitiveComponent * OtherComp, FVector NormalImpulse, const FHitResult & Hit)
+void AProjectileActor::OnActorHit(UPrimitiveComponent * HitComp, AActor * OtherActor, UPrimitiveComponent * OtherComp, FVector NormalImpulse, const FHitResult & Hit)
 {
-	print("HIT ME!");
+	print("I hit something");
 }
+
+
 

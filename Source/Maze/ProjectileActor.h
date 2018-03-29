@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "ProjectileActor.generated.h"
 
+
 UCLASS()
 class MAZE_API AProjectileActor : public AActor
 {
@@ -30,6 +31,6 @@ public:
 	void OnPHit();
 
 	void Initialize(FVector startLocation);
-	void OnHit(class UPrimitiveComponent* HitComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+	void OnActorHit(class UPrimitiveComponent* HitComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 	
 };

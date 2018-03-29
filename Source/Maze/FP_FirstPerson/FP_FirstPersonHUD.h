@@ -19,11 +19,12 @@ public:
 
 	bool isGameOver = false;
 	bool showTopDownView = false;
+	int Health;
 	FVector playerLocation;
 
 private:
 	/** Crosshair asset pointer */
 	class UTexture2D* CrosshairTex;
-
+	UFont* Font;
 };
 

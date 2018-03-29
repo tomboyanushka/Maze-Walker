@@ -21,7 +21,7 @@
 #include "Runtime/Engine/Classes/Camera/CameraActor.h"
 #include "ProjectileActorEnemy.h"
 #include "Runtime/Engine/Classes/Components/BoxComponent.h"
-
+#include <string>
 
 
 #define print(text) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 1.5, FColor::Green,text)
@@ -33,7 +33,7 @@ DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
 //////////////////////////////////////////////////////////////////////////
 // AFP_FirstPersonCharacter
 
-int Health = 100;
+
 //FString EString = FString(TEXT("AProjectileActorEnemy"));
 
 AFP_FirstPersonCharacter::AFP_FirstPersonCharacter()
@@ -48,13 +48,11 @@ AFP_FirstPersonCharacter::AFP_FirstPersonCharacter()
 	BaseTurnRate = 45.f;
 	BaseLookUpRate = 45.f;
 
-	FPSComponent = CreateDefaultSubobject<UCapsuleComponent>(TEXT("BulletCollider"));
-	FPSComponent->bGenerateOverlapEvents = true;
-	FPSComponent->SetWorldScale3D(FVector(2.0f, 2.0f, 2.0f));
-	//FPSComponent->IsSimulatingPhysics = true;
-	FPSComponent->SetMobility(EComponentMobility::Movable);
-	FPSComponent->OnComponentHit.AddDynamic(this, &AFP_FirstPersonCharacter::OnHit);
-	
+	TriggerCapsule = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Trigger Capsule"));
+	TriggerCapsule->InitCapsuleSize(55.f, 96.0f);;
+	TriggerCapsule->SetCollisionProfileName(TEXT("Trigger"));
+	TriggerCapsule->SetupAttachment(RootComponent);
+	TriggerCapsule->OnComponentBeginOverlap.AddDynamic(this, &AFP_FirstPersonCharacter::OnOverlapBegin);
 
 	// Create a CameraComponent	
 	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
@@ -63,19 +61,20 @@ AFP_FirstPersonCharacter::AFP_FirstPersonCharacter()
 	FirstPersonCameraComponent->bUsePawnControlRotation = true;
 
 	TopDownCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("TopDownCamera"));
-	TopDownCameraComponent->SetupAttachment(GetCapsuleComponent());
-	TopDownCameraComponent->SetWorldLocation(FVector(0, 0, 964.f)); // Position the camera
-	TopDownCameraComponent->RelativeRotation = FRotator::FRotator(0, 90, 0);// FQuat::FQuat(90, 0, 0, 0);
-	//TopDownCameraComponent->bUsePawnControlRotation = true;
-	
-	// Create a mesh component that will be used when being viewed from a '1st person' view (when controlling this pawn)
+	//TopDownCameraComponent->SetupAttachment(GetCapsuleComponent());
+	TopDownCameraComponent->SetAutoActivate(true);
+	TopDownCameraComponent->SetWorldLocation(FVector(0, 0, 1964.f)); // Position the camera
+	//TopDownCameraComponent->RelativeRotation = FRotator::FRotator(0, 90, 0);// FQuat::FQuat(90, 0, 0, 0);
+	TopDownCameraComponent->bUsePawnControlRotation = true;
+
+																			// Create a mesh component that will be used when being viewed from a '1st person' view (when controlling this pawn)
 	Mesh1P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh1P"));
 	Mesh1P->SetOnlyOwnerSee(true);				// Set so only owner can see mesh
 	Mesh1P->SetupAttachment(FirstPersonCameraComponent);	// Attach mesh to FirstPersonCameraComponent
 	Mesh1P->bCastDynamicShadow = false;			// Disallow mesh to cast dynamic shadows
 	Mesh1P->CastShadow = false;				// Disallow mesh to cast other shadows
 
-	// Create a gun mesh component
+											// Create a gun mesh component
 	FP_Gun = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FP_Gun"));
 	FP_Gun->SetOnlyOwnerSee(true);			// Only the owning player will see this mesh
 	FP_Gun->bCastDynamicShadow = false;		// Disallow mesh to cast dynamic shadows
@@ -89,7 +88,7 @@ AFP_FirstPersonCharacter::AFP_FirstPersonCharacter()
 	// Default offset from the character location for projectiles to spawn
 	GunOffset = FVector(100.0f, 30.0f, 10.0f);
 
-	
+
 
 	// Note: The ProjectileClass and the skeletal mesh/anim blueprints for Mesh1P are set in the
 	// derived blueprint asset named MyCharacter (to avoid direct content references in C++)
@@ -104,13 +103,14 @@ void AFP_FirstPersonCharacter::SetupPlayerInputComponent(class UInputComponent* 
 {
 	// set up gameplay key bindings
 	check(PlayerInputComponent);
-	
+	//InputComponent = PlayerInputComponent;
+
 	// Set up gameplay key bindings
 
 	// Bind jump events
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
-	
+
 	// Bind fire event
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AFP_FirstPersonCharacter::OnFire);
 	
@@ -120,7 +120,7 @@ void AFP_FirstPersonCharacter::SetupPlayerInputComponent(class UInputComponent* 
 	// Bind movement events
 	PlayerInputComponent->BindAxis("MoveForward", this, &AFP_FirstPersonCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AFP_FirstPersonCharacter::MoveRight);
-	
+
 	// We have 2 versions of the rotation bindings to handle different kinds of devices differently
 	// "turn" handles devices that provide an absolute delta, such as a mouse.
 	// "turnrate" is for devices that we choose to treat as a rate of change, such as an analog joystick
@@ -132,31 +132,30 @@ void AFP_FirstPersonCharacter::SetupPlayerInputComponent(class UInputComponent* 
 
 void AFP_FirstPersonCharacter::Tick(float deltaTime)
 {
+	
+	if (Health <= 0)
+	{
+		DisableInput(GetWorld()->GetFirstPlayerController());
+		//this->InputComponent->Deactivate(); 
+		//InputComponent = nullptr;
+	}
 	Super::Tick(deltaTime);
 	auto hud = Cast<AFP_FirstPersonHUD>(GetWorld()->GetFirstPlayerController()->GetHUD());
+	hud->Health = Health;
 	auto controller = GetWorld()->GetFirstPlayerController();
 	if (GetWorld()->GetFirstPlayerController()->IsInputKeyDown(EKeys::Tab))
 	{
 
-		//ACameraActor *camera = nullptr;
-		//for (TActorIterator<ACameraActor> ActorItr(GetWorld()); ActorItr; ++ActorItr)
-		//{
-
-		//	// Same as with the Object Iterator, access the subclass instance with the * or -> operators.
-
-		//	camera = *ActorItr;
-		//	if (camera->GetFName().ToString() == FString("CameraActorX"))
-		//	{
-		//		break;
-		//	}
-		//}
-		//auto component = (UCameraComponent*)camera->GetRootComponent();
+	
 		FirstPersonCameraComponent->Deactivate();
-		auto quat = FQuat::FQuat(90, 90, 0,0);
+		auto quat = FQuat::FQuat(0, -90, 0, 0);
 		TopDownCameraComponent->SetWorldLocationAndRotation(FVector(2840.0, 6360.0, 7420.f), quat);
-		Mesh1P->SetupAttachment(TopDownCameraComponent); 
+		//TopDownCameraComponent->SetWorldLocation(FVector(2840.0, 6360.0, 7420.f));
+		Mesh1P->SetupAttachment(TopDownCameraComponent);
+		TopDownCameraComponent->bUsePawnControlRotation = true;
 		hud->showTopDownView = true;
 		hud->playerLocation = controller->GetPawn()->GetActorLocation();
+	
 		//controller->SetViewTarget(camera);
 
 	}
@@ -166,7 +165,7 @@ void AFP_FirstPersonCharacter::Tick(float deltaTime)
 		//controller->SetViewTarget(nullptr);
 		FirstPersonCameraComponent->Activate();
 		Mesh1P->SetupAttachment(FirstPersonCameraComponent);
-		
+
 	}
 }
 
@@ -179,11 +178,11 @@ void AFP_FirstPersonCharacter::OnFire()
 	}
 
 	// Try and play a firing animation if specified
-	if(FireAnimation != NULL)
+	if (FireAnimation != NULL)
 	{
 		// Get the animation object for the arms mesh
 		UAnimInstance* AnimInstance = Mesh1P->GetAnimInstance();
-		if(AnimInstance != NULL)
+		if (AnimInstance != NULL)
 		{
 			AnimInstance->Montage_Play(FireAnimation, 1.f);
 		}
@@ -191,7 +190,7 @@ void AFP_FirstPersonCharacter::OnFire()
 
 	// Now send a trace from the end of our gun to see if we should hit anything
 	APlayerController* PlayerController = Cast<APlayerController>(GetController());
-	
+
 	// Calculate the direction of fire and the start location for trace
 	FVector CamLoc;
 	FRotator CamRot;
@@ -236,12 +235,12 @@ void AFP_FirstPersonCharacter::BeginTouch(const ETouchIndex::Type FingerIndex, c
 	// If touch is already pressed check the index. If it is not the same as the current touch assume a second touch and thus we want to fire
 	if (TouchItem.bIsPressed == true)
 	{
-		if( TouchItem.FingerIndex != FingerIndex)
+		if (TouchItem.FingerIndex != FingerIndex)
 		{
-			OnFire();			
+			OnFire();
 		}
 	}
-	else 
+	else
 	{
 		// Cache the finger index and touch location and flag we are processing a touch
 		TouchItem.bIsPressed = true;
@@ -254,7 +253,7 @@ void AFP_FirstPersonCharacter::BeginTouch(const ETouchIndex::Type FingerIndex, c
 void AFP_FirstPersonCharacter::EndTouch(const ETouchIndex::Type FingerIndex, const FVector Location)
 {
 	// If we didn't record the start event do nothing, or this is a different index
-	if((TouchItem.bIsPressed == false) || ( TouchItem.FingerIndex != FingerIndex) )
+	if ((TouchItem.bIsPressed == false) || (TouchItem.FingerIndex != FingerIndex))
 	{
 		return;
 	}
@@ -349,17 +348,25 @@ void AFP_FirstPersonCharacter::TryEnableTouchscreenMovement(UInputComponent* Pla
 {
 	PlayerInputComponent->BindTouch(EInputEvent::IE_Pressed, this, &AFP_FirstPersonCharacter::BeginTouch);
 	PlayerInputComponent->BindTouch(EInputEvent::IE_Released, this, &AFP_FirstPersonCharacter::EndTouch);
-	PlayerInputComponent->BindTouch(EInputEvent::IE_Repeat, this, &AFP_FirstPersonCharacter::TouchUpdate);	
+	PlayerInputComponent->BindTouch(EInputEvent::IE_Repeat, this, &AFP_FirstPersonCharacter::TouchUpdate);
 }
 
-void AFP_FirstPersonCharacter::OnHit(UPrimitiveComponent * HitComp, AActor * OtherActor, UPrimitiveComponent * OtherComp, FVector NormalImpulse, const FHitResult & Hit)
+void AFP_FirstPersonCharacter::OnOverlapBegin(UPrimitiveComponent * OverlappedComp, AActor * OtherActor, UPrimitiveComponent * OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult & SweepResult)
 {
-	print("I got hit");
-	//if (OtherActor->IsA(AProjectileActor::StaticClass()))
-	//{
-	//	print("I got hit");
-	//	//Health -= 10;
-	//}
+	if (OtherActor->IsA(AProjectileActorEnemy::StaticClass()))
+	{
+		Health -= 10;
+		print(std::to_string(Health).c_str());
+	}
+
 }
 
-
+//void AFP_FirstPersonCharacter::OnHit(UPrimitiveComponent * HitComp, AActor * OtherActor, UPrimitiveComponent * OtherComp, FVector NormalImpulse, const FHitResult & Hit)
+//{
+//	//print("I got hit");
+//	if (OtherActor->IsA(AProjectileActorEnemy::StaticClass()))
+//	{
+//		//print("I got hit again");
+//		Health -= 10;
+//	}
+//}

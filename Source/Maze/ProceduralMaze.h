@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "ProceduralMaze.generated.h"
 
+
+
 UCLASS()
 class MAZE_API AProceduralMaze : public AActor
 {
@@ -22,7 +24,7 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
+	TSubclassOf<ACharacter> EnemyActorClass;
 	
 	
 };

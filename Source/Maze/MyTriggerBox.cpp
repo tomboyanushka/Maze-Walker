@@ -6,13 +6,18 @@
 #include "Engine/World.h"
 #include "FP_FirstPerson/FP_FirstPersonHUD.h"
 #include "DrawDebugHelpers.h"
+#include "Runtime/Engine/Public/CanvasTypes.h"
+#include "Runtime/Core/Public/Internationalization/Text.h"
+#include "Runtime/Engine/Public/CanvasItem.h"
 
 
 #define printf(text, fstring) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString::Printf(TEXT(text), fstring))
 
-
+FText GameOverText = FText::FromString("GAME OVER!");
 AMyTriggerBox::AMyTriggerBox()
 {
+	
+	
 	//Register Events
 	OnActorBeginOverlap.AddDynamic(this, &AMyTriggerBox::OnOverlapBegin);
 	OnActorEndOverlap.AddDynamic(this, &AMyTriggerBox::OnOverlapEnd);
@@ -37,6 +42,8 @@ void AMyTriggerBox::OnOverlapBegin(class AActor* OverlappedActor, class AActor* 
 		// print to screen using above defined method when actor enters trigger box
 		print("Overlap Begin");
 		//printFString("Other Actor = %s", *OtherActor->GetName());
+
+		
 	}
 }
 

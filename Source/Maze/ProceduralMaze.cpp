@@ -7,14 +7,15 @@
 #include "MazeController.h"
 #include "Engine/World.h"
 #include "MyTriggerBox.h"
-
+#include "Runtime/Engine/Classes/GameFramework/Character.h"
+#include "UObject/ConstructorHelpers.h"
 #include <iostream>
 #include <algorithm>
 #include <cstdlib>
 #include <ctime>
 #include <stdlib.h>
 using namespace std;
-
+#define print(text) if (GEngine) GEngine->AddOnScreenDebugMessage(-1, 1.5, FColor::Green,text)
 int **l;
 int width = 34; 
 int height = 15;
@@ -57,6 +58,14 @@ AProceduralMaze::AProceduralMaze()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	// set default pawn class to our Blueprinted character
+	 
+	//auto a = CreateDefaultSubobject<ACharacter>("/Game/BP_Enemy.BP_Enemy");
+	static ConstructorHelpers::FClassFinder<ACharacter> PlayerPawnBPClass(TEXT("/Game/BP_Enemy"));
+	if (PlayerPawnBPClass.Class != NULL)
+	{
+		EnemyActorClass = PlayerPawnBPClass.Class;
+	}
 
 }
 
@@ -76,8 +85,39 @@ void AProceduralMaze::BeginPlay()
 		l[1][1] = 0;
 		l[0][1] = 0;
 		l[33][13] = 0;
+	
 		for (int i = 0; i < 14; ++i)
+		{
 			l[33][i] = 0;
+		}
+		for (int i = 0; i < 14; ++i)
+		{
+			if (l[5][i] == 0)
+			{
+
+				auto v = FVector(400 * i - 100, 400 * 5 + 100, 90);
+				auto r = FRotator();
+				auto EnemyLoc = GetWorld()->SpawnActor<ACharacter>(EnemyActorClass, v, r);
+				if (EnemyLoc != nullptr)
+				{
+					EnemyLoc->SetActorLocation(FVector(400 * 1 - 100, 400 * 0 + 100, 90));
+				}
+			}
+			if (l[15][i] == 0)
+			{
+				auto v = FVector(400 * i - 100, 400 * 15 + 100, 90);
+				auto r = FRotator();
+				auto EnemyLoc = GetWorld()->SpawnActor<ACharacter>(EnemyActorClass, v, r);
+			}
+			if (l[31][i] == 0)
+			{
+				auto v = FVector(400 * i - 100, 400 * 31 + 100, 90);
+				auto r = FRotator();
+				auto EnemyLoc = GetWorld()->SpawnActor<ACharacter>(EnemyActorClass, v, r);
+			}
+
+		}
+			
 
 		int endI;
 		for (int i = 0; i < 14; ++i)
