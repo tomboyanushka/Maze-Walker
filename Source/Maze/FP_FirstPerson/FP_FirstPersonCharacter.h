@@ -155,8 +155,8 @@ protected:
 	* @param	InputComponent	The input component pointer to bind controls to
 	* @returns true if touch controls were enabled.
 	*/
-	void TryEnableTouchscreenMovement(UInputComponent* InputComponent);
-
+	void TryEnableTouchscreenMovement(UInputComponent* InputComponent);  
+	 
 public:
 	int Health = 200;
 	UFUNCTION()
