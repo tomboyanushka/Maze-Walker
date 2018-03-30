@@ -50,14 +50,15 @@ void AFP_FirstPersonHUD::DrawHUD()
 	auto FPPlayer = (AFP_FirstPersonCharacter*)(PlayerController);
 	FText HealthTextString = FText::FromString((std::string("Health: ") + std::to_string(Health)).c_str());
 	FLinearColor TheFontColour = FLinearColor(1.0f, 1.0f, 1.0f);
-	auto pos = FVector2D(Center.X, Center.Y);
+	auto pos = FVector2D(Center.X - 200, Center.Y);
 	auto HealthPos = FVector2D(20, 20);
+	
 	FCanvasTextItem NewText(pos, GameOverText, Font, TheFontColour);
 	FCanvasTextItem HealthText(HealthPos, HealthTextString, Font, TheFontColour);
 
 	//Text Scale
-	NewText.Scale.Set(1, 1);
-
+	NewText.Scale.Set(2, 2);
+	
 	
 	Canvas->DrawItem(HealthText);
 	Canvas->DrawItem( TileItem );

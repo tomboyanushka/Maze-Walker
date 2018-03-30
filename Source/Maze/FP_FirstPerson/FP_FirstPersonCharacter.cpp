@@ -144,13 +144,14 @@ void AFP_FirstPersonCharacter::Tick(float deltaTime)
 	hud->Health = Health;
 	auto controller = GetWorld()->GetFirstPlayerController();
 	if (GetWorld()->GetFirstPlayerController()->IsInputKeyDown(EKeys::Tab))
-	{
-
-	
-		FirstPersonCameraComponent->Deactivate();
+	{ 
 		auto quat = FQuat::FQuat(0, -90, 0, 0);
+		FirstPersonCameraComponent->SetWorldRotation(quat);
+		FirstPersonCameraComponent->Deactivate();
+	
 		TopDownCameraComponent->SetWorldLocationAndRotation(FVector(2840.0, 6360.0, 7420.f), quat);
 		//TopDownCameraComponent->SetWorldLocation(FVector(2840.0, 6360.0, 7420.f));
+		AddControllerPitchInput(45);
 		Mesh1P->SetupAttachment(TopDownCameraComponent);
 		TopDownCameraComponent->bUsePawnControlRotation = true;
 		hud->showTopDownView = true;
@@ -356,7 +357,8 @@ void AFP_FirstPersonCharacter::OnOverlapBegin(UPrimitiveComponent * OverlappedCo
 	if (OtherActor->IsA(AProjectileActorEnemy::StaticClass()))
 	{
 		Health -= 10;
-		print(std::to_string(Health).c_str());
+		if (Health < 0)Health = 0;
+		//print(std::to_string(Health).c_str());
 	}
 
 }

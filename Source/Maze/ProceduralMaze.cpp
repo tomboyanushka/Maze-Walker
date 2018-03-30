@@ -96,24 +96,24 @@ void AProceduralMaze::BeginPlay()
 			{
 
 				auto v = FVector(400 * i - 100, 400 * 5 + 100, 90);
-				auto r = FRotator();
-				auto EnemyLoc = GetWorld()->SpawnActor<ACharacter>(EnemyActorClass, v, r);
-				if (EnemyLoc != nullptr)
+				auto r = FRotator(0, 90, 0);
+				//auto EnemyLoc = GetWorld()->SpawnActor<ACharacter>(EnemyActorClass, v, r);
+				//if (EnemyLoc != nullptr)
 				{
-					EnemyLoc->SetActorLocation(FVector(400 * 1 - 100, 400 * 0 + 100, 90));
+					//EnemyLoc->SetActorLocation(FVector(400 * 1 - 100, 400 * 0 + 100, 90));
 				}
 			}
 			if (l[15][i] == 0)
 			{
 				auto v = FVector(400 * i - 100, 400 * 15 + 100, 90);
-				auto r = FRotator();
-				auto EnemyLoc = GetWorld()->SpawnActor<ACharacter>(EnemyActorClass, v, r);
+				auto r = FRotator(0, 90, 0);
+				//auto EnemyLoc = GetWorld()->SpawnActor<ACharacter>(EnemyActorClass, v, r);
 			}
 			if (l[31][i] == 0)
 			{
 				auto v = FVector(400 * i - 100, 400 * 31 + 100, 90);
-				auto r = FRotator();
-				auto EnemyLoc = GetWorld()->SpawnActor<ACharacter>(EnemyActorClass, v, r);
+				auto r = FRotator(0,90,0);
+				//auto EnemyLoc = GetWorld()->SpawnActor<ACharacter>(EnemyActorClass, v, r);
 			}
 
 		}
